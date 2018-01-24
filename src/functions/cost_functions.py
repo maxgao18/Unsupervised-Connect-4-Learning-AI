@@ -19,3 +19,16 @@ class NegativeLogLikelihood:
     @staticmethod
     def delta (network_output, z_activation_deriv, expected_output):
         return -(expected_output/network_output)*z_activation_deriv
+
+class CustomCost:
+    @staticmethod
+    def cost (network_output, expected_output):
+        return NegativeLogLikelihood.cost(network_output[:7], expected_output[:7]) \
+               + QuadraticCost.cost(network_output[7:], expected_output[7:])
+
+    @staticmethod
+    def delta (network_output, z_activation_deriv, expected_output):
+        deltas = np.zeros(8)
+        deltas[:7] = NegativeLogLikelihood.delta(network_output[:7], z_activation_deriv[:7], expected_output[:7])
+        deltas[7:] = QuadraticCost.delta(network_output[7:], z_activation_deriv[7:], expected_output[7:])
+        return deltas

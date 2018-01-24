@@ -1,5 +1,5 @@
 import numpy as np
-from functions import Softmax
+from functions import CustomCost
 
 # Makes a 3D np array into a 1D np array
 def flatten_image(image):
@@ -11,15 +11,15 @@ def flatten_image(image):
     return image
 
 def func(z):
-    return Softmax.func(z)
+    return CustomCost.func(z)
 
 # derivative of softmax (z*(1-z)) for unsquashed activations z
 def func_deriv(z):
-    return Softmax.func_deriv(z)
+    return CustomCost.func_deriv(z)
 
-class SoftmaxLayer:
+class OutputLayer:
     # Args:
-    #   layer_shape - a 2-tuple of ints (number of neurons on current layer, number of neurons on previous layer)
+    #   layer_shape - a 2-tuple of ints (number of neurons on current layer (fixed at 8), number of neurons on previous layer)
     #   weights (optional) - a 2D np array of the weights
     #   biases (optional) a 1D np array of the biases
     def __init__(self, layer_shape, weights=None, biases=None):

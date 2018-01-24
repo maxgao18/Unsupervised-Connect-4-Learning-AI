@@ -5,13 +5,12 @@ from layers import Kernel
 from layers import ConvLayer
 from layers import DeconvLayer
 from layers import DenseLayer
-from layers import SoftmaxLayer
+from layers import OutputLayer
 
-from functions import QuadraticCost
-from functions import NegativeLogLikelihood
+from functions import CustomCost
 
 from functions import LeakyRELU
-from functions import Softmax
+from functions import CustomActivation
 
 from random import shuffle
 from copy import deepcopy
@@ -41,7 +40,7 @@ def convert_to_image(arr, image_shape):
 class ConvolutionalNet:
     # Args:
     #   input_shape (tuple) - the shape of the input (for images: (image depth, image height, image length))
-    def __init__(self, input_shape, layers=None, cost_func=NegativeLogLikelihood):
+    def __init__(self, input_shape, layers=None, cost_func=CustomCost):
         self.input_shape = input_shape
         self.layer_types = []
         self.num_layers = 0
@@ -52,11 +51,12 @@ class ConvolutionalNet:
 
     # Adds a new layer to the network
     # Args:
-    #   layer_type (string) - the type of layer to be added (conv, deconv, dense, soft)
+    #   layer_type (string) - the type of layer to be added (conv, deconv, dense, out)
     #   output_size (tuple/int) optional - the shape of the output for that layer
     #                   conv (None)
     #                   deconv (2 tuple): (output height, output length)
-    #                   dense and softmax (int): num of neurons on the layer
+    #                   dense (int): num of neurons on the layer
+    #                   out (None): fixed at 8
     #   kernel_size (2-tuple) optional - for conv and deconv layers, (num kernels, kernel height, kernel length)
     def add(self, layer_type, output_size=None, kernel_size=None):
         # If there are no layers, make the first one
@@ -81,8 +81,8 @@ class ConvolutionalNet:
                 self.layers.append(DeconvLayer(input_shape=input_shape,
                                                output_shape=output_shape,
                                                kernel_shape=kernel_shape))
-        elif layer_type is "dense" or layer_type is "soft":
-            # Assume last layer was softmax or dense
+        elif layer_type is "dense" or layer_type is "out":
+            # Assume last layer was output or dense
             num_prev_neurons = input_shape
             # If it is a deconv or conv, calculate number of previous neurons
             if not is_first_layer:
@@ -90,11 +90,12 @@ class ConvolutionalNet:
                     num_prev_neurons = input_shape[0]*input_shape[1]*input_shape[2]
 
             # Shape for layers are (num neurons, num prev neurons)
-            layer_shape = (output_size, num_prev_neurons)
             if layer_type is "dense":
+                layer_shape = (output_size, num_prev_neurons)
                 self.layers.append(DenseLayer(layer_shape=layer_shape))
-            elif layer_type is "soft":
-                self.layers.append(SoftmaxLayer(layer_shape=layer_shape))
+            elif layer_type is "out":
+                layer_shape = (8, num_prev_neurons)
+                self.layers.append(OutputLayer(layer_shape=layer_shape))
 
         self.num_layers += 1
         self.layer_types.append(layer_type)
@@ -148,16 +149,16 @@ class ConvolutionalNet:
             z_activations.append(deepcopy(curr_z))
 
             if not i == self.num_layers:
-                # Use softmax for SM layers, otherwise leaky relu
-                if lt is "soft":
-                    curr_z = Softmax.func(curr_z)
+                # Use custom activation for output layers, otherwise leaky relu
+                if lt is "out":
+                    curr_z = CustomActivation.func(curr_z)
                 else:
                     curr_z = LeakyRELU.func(curr_z)
 
         # Store derivatives and activation for output layer
-        if self.layer_types[-1] is "soft":
-            squashed_activations = Softmax.func(deepcopy(curr_z))
-            squashed_activations_deriv = Softmax.func_deriv(deepcopy(curr_z))
+        if self.layer_types[-1] is "out":
+            squashed_activations = CustomActivation.func(deepcopy(curr_z))
+            squashed_activations_deriv = CustomActivation.func_deriv(deepcopy(curr_z))
         else:
             squashed_activations = LeakyRELU.func_deriv(deepcopy(curr_z))
             squashed_activations_deriv = LeakyRELU.func_deriv(deepcopy(curr_z))
