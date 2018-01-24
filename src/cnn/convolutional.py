@@ -99,6 +99,7 @@ class ConvolutionalNet:
 
         self.num_layers += 1
         self.layer_types.append(layer_type)
+        self.velocity = None
 
     # Returns the next activation without squashing it
     # Args:
@@ -193,9 +194,10 @@ class ConvolutionalNet:
 
     # Updates the network given a specific minibatch (done by averaging gradients over the minibatch)
     # Args:
-    #   mini_batch - a list of tuples, (input, expected output)
     #   step_size - the amount the network should change its parameters by relative to the gradients
-    def update_network(self, mini_batch, step_size):
+    #   resistance - the factor in which the velocity is multiplied each time
+    #   mini_batch - a list of tuples, (input, expected output)
+    def update_network(self, step_size, resistance, mini_batch):
         gradient_w, gradient_b = self.backprop(mini_batch[0][0], mini_batch[0][1])
 
         for inp, outp in mini_batch[1:]:
@@ -207,8 +209,14 @@ class ConvolutionalNet:
         gradient_w *= step_size/(len(mini_batch)+0.00)
         gradient_b *= step_size/(len(mini_batch)+0.00)
 
+        if self.velocity is None:
+            self.velocity = np.array([gradient_w, gradient_b])
+        else:
+            self.velocity *= resistance
+            self.velocity += np.array([gradient_w, gradient_b])
+
         # Update weights and biases in opposite direction of gradients
-        for gw, gb, lyr in zip(gradient_w, gradient_b, self.layers):
+        for gw, gb, lyr in zip(self.velocity[0], self.velocity[1], self.layers):
             lyr.update(-gw, -gb)
 
     # Evaluates the average cost across the training set
@@ -219,22 +227,30 @@ class ConvolutionalNet:
             total += self.cost_func.cost(net_outp, outp)
         return total/len(training_set)
 
-    # Performs SGD on the network
+    def reset_velocity(self):
+        self.velocity = None
+
+    # Performs momentum based SGD on the network
     # Args:
     #   epochs - (int), number of times to loop over the entire batch
     #   step_size - (float), amount network should change its parameters per update
+    #   resistance - (float), the friction for momentum based descent
     #   mini_batch_size - (int), number of training examples per mini batch
     #   training_inputs - (list), the list of training inputs
     #   expected_outputs - (list), the list of expected outputs for each input
-    def stochastic_gradient_descent(self, epochs, step_size, mini_batch_size, training_inputs, expected_outputs):
+    def momentum_based_sdg(self, epochs, step_size, resistance, mini_batch_size, training_inputs, expected_outputs):
         training_set = []
         for inp, outp in zip(training_inputs, expected_outputs):
             training_set.append((inp, outp))
+
+        shuffle(training_set)
 
         # Train
         for ep in range(epochs):
             shuffle(training_set)
             for x in range(0, len(training_set), mini_batch_size):
-                self.update_network(training_set[x:x+mini_batch_size], step_size)
+                self.update_network(step_size, resistance, training_set[x:x+mini_batch_size])
+            self.reset_velocity()
+
             # Update with progress
-            print("Epoch: %d   Average cost: %f" % (ep+1, self.evaluate_cost(training_set)))
+            print("Epoch: %d   Average cost: %f" % (ep + 1, self.evaluate_cost(training_set)))
