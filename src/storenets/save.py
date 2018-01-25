@@ -1,10 +1,7 @@
-from neuralnets import GAN
-from neuralnets import Generator
-from neuralnets import Discriminator
 from neuralnets import ConvolutionalNet
 from layers import Kernel
 from layers import DenseLayer
-from layers import SoftmaxLayer
+from layers import OutputLayer
 from layers import DeconvLayer
 from layers import ConvLayer
 
@@ -29,9 +26,8 @@ def str_to_tuple(strn):
 # Saves a network into a seperate folder
 def save (filename, network):
     currdir = os.getcwd()
-    if isinstance(network, GAN):
-        currdir = currdir+"/"+filename+"_gan_net"
-    elif isinstance(network, ConvolutionalNet):
+
+    if isinstance(network, ConvolutionalNet):
         currdir = currdir+"/"+filename+"_cnn_net"
     else:
         return "Failed save"
@@ -43,36 +39,11 @@ def save (filename, network):
 
 # Saves a network, layer, or kernel into a txt file
 def save_net(filename, network, currdir):
-    # If gan object
-    if isinstance(network, GAN):
-        filename += "_gan"
-        filedir = os.path.join(currdir, filename+".txt")
-        savefile = open(filedir, "w")
-
-        # Save file names for generator and discriminator
-        savefile.write(filename+"_gen.txt\n")
-        savefile.write(filename+"_dis.txt\n")
-
-        savefile.write(tuple_to_str(network.image_shape) + "\n")
-        savefile.write(tuple_to_str(network.generator_input_shape) + "\n")
-        savefile.write(str(network.discriminator_output_shape) + "\n")
-
-        # Save generator and discriminator
-        save_net(filename, network.get_generator(), currdir)
-        save_net(filename, network.get_discriminator(), currdir)
-
-        # Close file
-        savefile.close()
-
     # If network object
-    elif isinstance(network, (Generator, Discriminator, ConvolutionalNet)):
+    if isinstance(network, ConvolutionalNet):
         filedir = None
         # Extend file name depending on type of network
-        if isinstance(network, Generator):
-            filename += "_gen"
-        elif isinstance(network, Discriminator):
-            filename += "_dis"
-        elif isinstance(network, ConvolutionalNet):
+        if isinstance(network, ConvolutionalNet):
             filename += "_cnn"
 
         filedir = os.path.join(currdir, filename + ".txt")
@@ -95,7 +66,7 @@ def save_net(filename, network, currdir):
         savefile.close()
 
     # If layer object
-    elif isinstance(network, (ConvLayer, DeconvLayer, DenseLayer, SoftmaxLayer)):
+    elif isinstance(network, (ConvLayer, DeconvLayer, DenseLayer, OutputLayer)):
         filedir = os.path.join(currdir, filename + ".txt")
 
         savefile = open(filedir, "w")
@@ -117,7 +88,7 @@ def save_net(filename, network, currdir):
                 savefile.write(newfilename+".txt\n")
                 save_net(newfilename, k, currdir)
 
-        elif isinstance(network, (SoftmaxLayer, DenseLayer)):
+        elif isinstance(network, (OutputLayer, DenseLayer)):
             savefile.write(tuple_to_str(network.layer_shape) + "\n")
             weights = network.weights
             biases = network.biases
