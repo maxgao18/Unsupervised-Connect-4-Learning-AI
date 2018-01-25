@@ -1,5 +1,5 @@
 import numpy as np
-from functions import CustomCost
+from functions import CustomActivation
 
 # Makes a 3D np array into a 1D np array
 def flatten_image(image):
@@ -11,11 +11,11 @@ def flatten_image(image):
     return image
 
 def func(z):
-    return CustomCost.func(z)
+    return CustomActivation.func(z)
 
 # derivative of softmax (z*(1-z)) for unsquashed activations z
 def func_deriv(z):
-    return CustomCost.func_deriv(z)
+    return CustomActivation.func_deriv(z)
 
 class OutputLayer:
     # Args:

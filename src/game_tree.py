@@ -2,12 +2,13 @@ import numpy as np
 import math
 import connectFour
 import copy
+from cnn import ConvolutionalNet
 
 class SearchTree:
-    def __init__(self, exploration_factor):
+    def __init__(self, exploration_factor, neural_net):
         self.__gamestates = {}
         self.exploration_factor = exploration_factor
-        # self.neural_net = neural_net
+        self.neural_net = neural_net
 
     # gamestate is a 2d array
     # q is vector of the expected reward for taking action a from gamestate
@@ -33,23 +34,24 @@ class SearchTree:
         board = np.zeros((6,7))
         to_play = 1
         while(connectFour.checkWinner(board) == 2):
-            connectFour.print_board(board)
+            # connectFour.print_board(board)
             if tuple(map(tuple,board)) not in self.__gamestates:
-                # result = self.neural_net.feedforward(gamestate)
-                result = np.random.randn(7)
-                result = result/np.sum(result)
-                v_prime = result
-                self.__gamestates[tuple(map(tuple,board))] = np.array([[0]*7, [0]*7, v_prime, to_play])
+                result = self.neural_net.feed_forward(board)
+                v_prime = result[:-1]
+                self.__gamestates[tuple(map(tuple,board))] = np.array([[0.0]*7, [0.0]*7, v_prime, to_play])
             #for each move, build the tree from root gamestate
             for i in range(depth):
                 self.select(copy.copy(board))
             connectFour.play(board, to_play, self.__gamestates[tuple(map(tuple,board))][1].index(max(self.__gamestates[tuple(map(tuple,board))][1])))
             to_play*=-1
-        connectFour.print_board(board)
+        # connectFour.print_board(board)
         training_set = []
+        summ = 0
         for key, value in self.__gamestates.viewitems():
-            if np.sum(value[1]) != 0:
-                training_set.append((np.array(key), value[1]/np.sum(value[1]), connectFour.checkWinner(board)))
+            if np.sum(value[1]) > 15:
+                summ+= np.sum(self.__gamestates[key][1])
+                training_set.append((np.array([np.array(key)]), np.append(value[1]/np.sum(value[1]),(np.sum(value[0])/np.sum(value[1])))))
+
         return training_set
 
     def select(self, gamestate):
@@ -73,7 +75,7 @@ class SearchTree:
         #calculate upper confidence bound, to pick a move
         max_ucb = -1*float("inf")
         for i in range(0, len(valid_moves)):
-            if max_ucb <= stats[0][valid_moves[i]] + self.exploration_factor*stats[2][valid_moves[i]]*math.sqrt(np.sum(stats[1]))/(1+stats[1][valid_moves[i]]):
+            if max_ucb <= stats[0][valid_moves[i]]*(1-self.exploration_factor) + self.exploration_factor*stats[2][valid_moves[i]]*math.sqrt(np.sum(stats[1]))/(1+stats[1][valid_moves[i]]):
                 move = valid_moves[i]
 
         #generate new state
@@ -86,18 +88,49 @@ class SearchTree:
             self.__gamestates[tupled_gamestate][0][move] = (self.__gamestates[tupled_gamestate][0][move]*self.__gamestates[tupled_gamestate][1][move] + win)/(self.__gamestates[tupled_gamestate][1][move] +1)
             self.__gamestates[tupled_gamestate][1][move] += 1
             return -1*win
-
-        # result = self.neural_net.feedforward(gamestate)
-        # v_prime = result [:-1]
-        result = np.random.randn(7)
-        result = result/np.sum(result)
-        v_prime = result
-        new_stats = np.array([[0]*7, [0]*7, v_prime, -1*stats[3]])
-        self.__gamestates[tupled_new_state] = new_stats
-        return -1*self.rollout(gamestate, -1*stats[3])
+        else:
+            result = self.neural_net.feed_forward(gamestate)
+            v_prime = result [:-1]
+            new_stats = np.array([[0.0]*7, [0.0]*7, v_prime, -1*stats[3]])
+            self.__gamestates[tupled_new_state] = new_stats
+            win = self.rollout(gamestate, -1*stats[3])
 
 
+            # print np.sum(self.__gamestates[tupled_gamestate][1])
+            return -1*self.rollout(gamestate, -1*stats[3])
 
-tree = SearchTree(0.5)
-training_set = tree.self_play(5)
-print np.shape(training_set)
+cnn = ConvolutionalNet((1,6,7))
+cnn.add("conv", None, (4,3,3))
+cnn.add("conv", None, (10,3,3))
+cnn.add("dense", 20)
+cnn.add("out")
+
+for hyperepoch in range(5):
+    print "Hyper Epoch: " + str(hyperepoch)
+    cnn_new = copy.deepcopy(cnn)
+    tree = SearchTree(1, cnn_new)
+    for i in range(15):
+        tree.self_play(30)
+    training_set = tree.self_play(30)
+    print np.shape(training_set)
+    print training_set[0][1]
+    cnn.momentum_based_sdg(epochs=20, step_size=0.03, resistance=0.5, mini_batch_size=len(training_set)/10, training_set=training_set)
+
+while True:
+    board = np.zeros((6,7))
+    connectFour.print_board(board)
+    while(connectFour.checkWinner(board) ==2):
+        move = input("make a move: ")
+        if not connectFour.check_valid(board, move):
+            continue
+        #connectFour.play(board, 1, minimax.pickMove(board, 1, 3, net0))
+        connectFour.play(board, 1, move)
+        connectFour.print_board(board)
+        # raw_input("press")
+        print
+        if not connectFour.checkWinner(board)==2:
+            break
+        results = cnn.feed_forward(np.array([board]))[:-1]
+        connectFour.play(board, -1, np.where(results == max(results)))
+        connectFour.print_board(board)
+    print ("WINNER:" + str(connectFour.checkWinner(board)))

@@ -32,3 +32,7 @@ class CustomCost:
         deltas[:7] = NegativeLogLikelihood.delta(network_output[:7], z_activation_deriv[:7], expected_output[:7])
         deltas[7:] = QuadraticCost.delta(network_output[7:], z_activation_deriv[7:], expected_output[7:])
         return deltas
+
+    @staticmethod
+    def cost_threshold(expected_output):
+        return NegativeLogLikelihood.cost(expected_output[:7], expected_output[:7])

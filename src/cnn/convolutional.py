@@ -227,6 +227,12 @@ class ConvolutionalNet:
             total += self.cost_func.cost(net_outp, outp)
         return total/len(training_set)
 
+    def cost_threshold(self, training_set):
+        total = 0.0
+        for inp, outp in training_set:
+            total += self.cost_func.cost_threshold(outp[:7])
+        return total/len(training_set)
+
     def reset_velocity(self):
         self.velocity = None
 
@@ -238,11 +244,7 @@ class ConvolutionalNet:
     #   mini_batch_size - (int), number of training examples per mini batch
     #   training_inputs - (list), the list of training inputs
     #   expected_outputs - (list), the list of expected outputs for each input
-    def momentum_based_sdg(self, epochs, step_size, resistance, mini_batch_size, training_inputs, expected_outputs):
-        training_set = []
-        for inp, outp in zip(training_inputs, expected_outputs):
-            training_set.append((inp, outp))
-
+    def momentum_based_sdg(self, epochs, step_size, resistance, mini_batch_size, training_set):
         shuffle(training_set)
 
         # Train
@@ -253,4 +255,5 @@ class ConvolutionalNet:
             self.reset_velocity()
 
             # Update with progress
+            print("Cost threshold %f" % (self.cost_threshold(training_set)))
             print("Epoch: %d   Average cost: %f" % (ep + 1, self.evaluate_cost(training_set)))
