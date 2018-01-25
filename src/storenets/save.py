@@ -1,4 +1,4 @@
-from neuralnets import ConvolutionalNet
+from cnn import ConvolutionalNet
 from layers import Kernel
 from layers import DenseLayer
 from layers import OutputLayer
