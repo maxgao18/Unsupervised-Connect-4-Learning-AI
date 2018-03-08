@@ -2,6 +2,8 @@ from activation_functions import LeakyRELU
 from activation_functions import Softmax
 from activation_functions import Sigmoid
 from activation_functions import RELU
+from activation_functions import CustomActivation
 
 from cost_functions import QuadraticCost
 from cost_functions import NegativeLogLikelihood
+from cost_functions import CustomCost
