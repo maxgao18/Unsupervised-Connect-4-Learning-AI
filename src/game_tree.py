@@ -111,12 +111,13 @@ cnn.addlayer("conv", None, (4,3,3))
 cnn.addlayer("dense", 20)
 cnn.addlayer("out")
 
-for hyperepoch in range(100):
+for hyperepoch in range(10000):
     print "Hyper Epoch: " + str(hyperepoch)
     cnn_new = copy.deepcopy(cnn)
     tree = SearchTree(0.5, cnn_new)
-    for i in range(10):
-        print "Game: " + str(i)
+    for i in range(50):
+        if (i%10 == 0):
+            print "Game: " + str(i)
         tree.self_play(30)
     training_set = tree.self_play(30)
     # print training_set
@@ -129,6 +130,24 @@ for hyperepoch in range(100):
                                     training_set=training_set,
                                     is_momentum_based=False,
                                     friction=0.9)
+
+    if hyperepoch % 5 == 1:
+
+        board = np.zeros((6,7))
+        while(connectFour.checkWinner(board) ==2):
+            #connectFour.play(board, 1, minimax.pickMove(board, 1, 3, net0))
+            results = cnn.feedforward(np.array([board]))[:-1]
+            connectFour.play(board, 1, np.where(results == max(results)))
+            connectFour.print_board(board)
+            # raw_input("press")
+            print
+            if not connectFour.checkWinner(board)==2:
+                break
+            results = cnn.feedforward(np.array([board]))[:-1]
+            connectFour.play(board, -1, np.where(results == max(results)))
+            connectFour.print_board(board)
+        print ("WINNER:" + str(connectFour.checkWinner(board)))
+
 
 while True:
     board = np.zeros((6,7))
