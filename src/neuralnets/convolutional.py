@@ -139,13 +139,8 @@ class ConvolutionalNet(ConvolutionalFramework):
     #   epochs - (int), number of times to loop over the entire batch
     #   step_size - (float), amount network should change its parameters per update
     #   mini_batch_size - (int), number of training examples per mini batch
-    #   training_inputs - (list), the list of training inputs
-    #   expected_outputs - (list), the list of expected outputs for each input
-    def stochastic_gradient_descent(self, epochs, step_size, mini_batch_size, training_inputs, expected_outputs,
+    def stochastic_gradient_descent(self, epochs, step_size, mini_batch_size, training_set,
                                     is_momentum_based=False, friction=0.9):
-        training_set = []
-        for inp, outp in zip(training_inputs, expected_outputs):
-            training_set.append((inp, outp))
 
         # Train
         for ep in range(epochs):

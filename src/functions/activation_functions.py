@@ -105,3 +105,16 @@ class Softmax:
     def func_deriv(z):
         z = Softmax.func(z)
         return z*(1-z)
+
+class CustomActivation:
+    @staticmethod
+    def func(z):
+        z[:7] = Softmax.func(z[:7])
+        z[7:] = Sigmoid.func(z[7:])
+        return z
+
+    @staticmethod
+    def func_deriv(z):
+        z[:7] = Softmax.func_deriv(z[:7])
+        z[7:] = Sigmoid.func_deriv(z[7:])
+        return z

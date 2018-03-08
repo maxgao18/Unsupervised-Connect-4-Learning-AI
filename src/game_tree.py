@@ -2,8 +2,7 @@ import numpy as np
 import math
 import connectFour
 import copy
-from cnn import ConvolutionalNet
-from storenets import save
+from neuralnets import ConvolutionalNet
 
 class SearchTree:
     def __init__(self, exploration_factor, neural_net):
@@ -106,10 +105,10 @@ class SearchTree:
             return -1*self.rollout(gamestate, -1*stats[3])
 
 cnn = ConvolutionalNet((1,6,7))
-cnn.add("conv", None, (4,3,3))
-cnn.add("conv", None, (4,3,3))
-cnn.add("dense", 20)
-cnn.add("out")
+cnn.addlayer("conv", None, (4,3,3))
+cnn.addlayer("conv", None, (4,3,3))
+cnn.addlayer("dense", 20)
+cnn.addlayer("out")
 
 for hyperepoch in range(100000):
     print "Hyper Epoch: " + str(hyperepoch)
@@ -121,8 +120,13 @@ for hyperepoch in range(100000):
     training_set = tree.self_play(30)
     print np.shape(training_set)
     print training_set[0][1]
-    cnn.momentum_based_sdg(epochs=10, step_size=0.03, resistance=0.7, mini_batch_size=len(training_set)/10, training_set=training_set)
-    save("lmao", cnn)
+
+    cnn.stochastic_gradient_descent(epochs=10,
+                                    step_size=0.03,
+                                    mini_batch_size=len(training_set)/10,
+                                    training_set=training_set,
+                                    is_momentum_based=False,
+                                    friction=0.9)
 
 while True:
     board = np.zeros((6,7))
