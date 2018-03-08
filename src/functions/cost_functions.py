@@ -41,4 +41,5 @@ class CustomCost:
         deltas = np.zeros(8)
         deltas[:7] = NegativeLogLikelihood.delta(network_output[:7], z_activation_deriv[:7], expected_output[:7])
         deltas[7:] = QuadraticCost.delta(network_output[7:], z_activation_deriv[7:], expected_output[7:])
+        return deltas
 

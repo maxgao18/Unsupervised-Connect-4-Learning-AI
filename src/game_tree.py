@@ -29,7 +29,7 @@ class SearchTree:
         while(connectFour.checkWinner(gamestate) == 2):
             connectFour.play(gamestate, to_play, connectFour.random_valid(gamestate))
             to_play*=-1
-        print "Rollout complete, winner is: " + str(connectFour.checkWinner(gamestate))
+        #print "Rollout complete, winner is: " + str(connectFour.checkWinner(gamestate))
         return connectFour.checkWinner(gamestate)*to_play
 
     def self_play (self, depth):
@@ -82,7 +82,7 @@ class SearchTree:
 
         #generate new state
         new_state = connectFour.play(gamestate, stats[3], move)
-        connectFour.print_board(new_state)
+        #connectFour.print_board(new_state)
 
         tupled_new_state = tuple(map(tuple,new_state))
 
@@ -91,10 +91,10 @@ class SearchTree:
             win = self.select(new_state)
             self.__gamestates[tupled_gamestate][0][move] = (self.__gamestates[tupled_gamestate][0][move]*self.__gamestates[tupled_gamestate][1][move] + win)/(self.__gamestates[tupled_gamestate][1][move] +1)
             self.__gamestates[tupled_gamestate][1][move] += 1
-            print self.__gamestates[tupled_gamestate]
+            #print self.__gamestates[tupled_gamestate]
             return -1*win
         else:
-            print "LEAF NODE, starting rollout"
+            #print "LEAF NODE, starting rollout"
             result = self.neural_net.feedforward(gamestate)
             v_prime = result [:-1]
             new_stats = np.array([[0.0]*7, [0.0]*7, v_prime, -1*stats[3]])
@@ -119,9 +119,9 @@ for hyperepoch in range(100):
         print "Game: " + str(i)
         tree.self_play(30)
     training_set = tree.self_play(30)
-    print training_set
-    print np.shape(training_set)
-    print training_set[0][1]
+    # print training_set
+    # print np.shape(training_set)
+    # print training_set[0][1]
 
     cnn.stochastic_gradient_descent(epochs=10,
                                     step_size=0.03,

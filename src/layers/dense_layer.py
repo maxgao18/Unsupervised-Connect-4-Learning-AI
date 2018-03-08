@@ -15,7 +15,7 @@ class DenseLayer(Layer):
         if weights is not None:
             self.weights = weights
         else:
-            self.weights = np.random.randn(output_shape, input_shape)
+            self.weights = np.random.randn(output_shape, input_shape)/np.sqrt(output_shape*input_shape)
 
         if biases is not None:
             self.biases = biases
@@ -42,8 +42,6 @@ class DenseLayer(Layer):
         return weightDeltas, biasDeltas, prevDeltas
 
     def getdeltas(self, d_prev_z_activations, curr_deltas):
-        print curr_deltas
-        print "+THEFUCK"
         prevDeltas = np.dot(self.weights.transpose(), curr_deltas) * d_prev_z_activations
         return prevDeltas
 

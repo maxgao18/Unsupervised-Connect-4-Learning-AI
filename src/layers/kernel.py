@@ -56,8 +56,8 @@ class Kernel:
         if weights is not None:
             self.weights = weights
         else:
-            self.weights = [np.random.randn(self.feature_map_height, self.feature_map_length) for f in range(self.num_feature_maps)]
-            self.weights /= np.sqrt(self.feature_map_length*self.feature_map_height)
+            sq = np.sqrt(self.feature_map_length*self.feature_map_height)
+            self.weights = [np.random.randn(self.feature_map_height, self.feature_map_length)/sq for f in range(self.num_feature_maps)]
 
         if bias is not None:
             self.bias = bias

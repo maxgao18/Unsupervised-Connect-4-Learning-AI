@@ -73,7 +73,6 @@ class ConvolutionalNet(ConvolutionalFramework):
 
             curr_z = lyr.activation_function.func(curr_z)
             fzs_list.append(deepcopy(curr_z))
-
         # Errors for the last layer
         delta = self.cost_function.delta(fzs_list[-1],
                                          dzs_list[-1],
@@ -97,8 +96,6 @@ class ConvolutionalNet(ConvolutionalFramework):
                 fzs = flatten_image(fzs)
                 dzs = flatten_image(dzs)
 
-            print "this is func deriv"
-            print dzs
             dw, db, dlt = lyr.backprop(fzs, dzs, delta)
             delta_w.insert(0, dw)
             delta_b.insert(0, db)
