@@ -1,0 +1,6 @@
+1%6%7%
+4%1%3%3%
+lmao_cnn_conv_0_kern_0.txt
+lmao_cnn_conv_0_kern_1.txt
+lmao_cnn_conv_0_kern_2.txt
+lmao_cnn_conv_0_kern_3.txt

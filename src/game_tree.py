@@ -29,6 +29,7 @@ class SearchTree:
         while(connectFour.checkWinner(gamestate) == 2):
             connectFour.play(gamestate, to_play, connectFour.random_valid(gamestate))
             to_play*=-1
+        print "Rollout complete, winner is: " + connectFOur.checkWinner
         return connectFour.checkWinner(gamestate)*to_play
 
     def self_play (self, depth):
@@ -81,6 +82,8 @@ class SearchTree:
 
         #generate new state
         new_state = connectFour.play(gamestate, stats[3], move)
+        connectFour.print_board(new_state)
+
         tupled_new_state = tuple(map(tuple,new_state))
 
         # if the new gamestate already exists, update q value
@@ -88,8 +91,10 @@ class SearchTree:
             win = self.select(new_state)
             self.__gamestates[tupled_gamestate][0][move] = (self.__gamestates[tupled_gamestate][0][move]*self.__gamestates[tupled_gamestate][1][move] + win)/(self.__gamestates[tupled_gamestate][1][move] +1)
             self.__gamestates[tupled_gamestate][1][move] += 1
+            print self.__gamestates[tupled_gamestate]
             return -1*win
         else:
+            print "LEAF NODE, starting rollout"
             result = self.neural_net.feed_forward(gamestate)
             v_prime = result [:-1]
             new_stats = np.array([[0.0]*7, [0.0]*7, v_prime, -1*stats[3]])

@@ -1,0 +1,9 @@
+4
+conv
+lmao_cnn_conv_0.txt
+conv
+lmao_cnn_conv_1.txt
+dense
+lmao_cnn_dense_2.txt
+out
+lmao_cnn_out_3.txt
