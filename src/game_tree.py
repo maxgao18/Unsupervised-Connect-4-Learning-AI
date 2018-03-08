@@ -106,7 +106,7 @@ cnn.add("conv", None, (4,3,3))
 cnn.add("dense", 20)
 cnn.add("out")
 
-for hyperepoch in range(10000):
+for hyperepoch in range(100000):
     print "Hyper Epoch: " + str(hyperepoch)
     cnn_new = copy.deepcopy(cnn)
     tree = SearchTree(0.5, cnn_new)
@@ -116,7 +116,7 @@ for hyperepoch in range(10000):
     training_set = tree.self_play(30)
     print np.shape(training_set)
     print training_set[0][1]
-    cnn.momentum_based_sdg(epochs=20, step_size=0.03, resistance=0.5, mini_batch_size=len(training_set)/10, training_set=training_set)
+    cnn.momentum_based_sdg(epochs=10, step_size=0.03, resistance=0.7, mini_batch_size=len(training_set)/10, training_set=training_set)
     save("lmao", cnn)
 
 while True:
