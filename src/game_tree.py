@@ -2,6 +2,7 @@ import numpy as np
 import math
 import connectFour
 import copy
+import time
 from neuralnets import ConvolutionalNet
 
 class SearchTree:
@@ -28,7 +29,7 @@ class SearchTree:
         while(connectFour.checkWinner(gamestate) == 2):
             connectFour.play(gamestate, to_play, connectFour.random_valid(gamestate))
             to_play*=-1
-        print "Rollout complete, winner is: " + connectFOur.checkWinner
+        print "Rollout complete, winner is: " + str(connectFour.checkWinner(gamestate))
         return connectFour.checkWinner(gamestate)*to_play
 
     def self_play (self, depth):
@@ -37,7 +38,7 @@ class SearchTree:
         while(connectFour.checkWinner(board) == 2):
             # connectFour.print_board(board)
             if tuple(map(tuple,board)) not in self.__gamestates:
-                result = self.neural_net.feed_forward(board)
+                result = self.neural_net.feedforward(board)
                 v_prime = result[:-1]
                 self.__gamestates[tuple(map(tuple,board))] = np.array([[0.0]*7, [0.0]*7, v_prime, to_play])
             #for each move, build the tree from root gamestate
@@ -94,7 +95,7 @@ class SearchTree:
             return -1*win
         else:
             print "LEAF NODE, starting rollout"
-            result = self.neural_net.feed_forward(gamestate)
+            result = self.neural_net.feedforward(gamestate)
             v_prime = result [:-1]
             new_stats = np.array([[0.0]*7, [0.0]*7, v_prime, -1*stats[3]])
             self.__gamestates[tupled_new_state] = new_stats
@@ -142,7 +143,7 @@ while True:
         print
         if not connectFour.checkWinner(board)==2:
             break
-        results = cnn.feed_forward(np.array([board]))[:-1]
+        results = cnn.feedforward(np.array([board]))[:-1]
         connectFour.play(board, -1, np.where(results == max(results)))
         connectFour.print_board(board)
     print ("WINNER:" + str(connectFour.checkWinner(board)))

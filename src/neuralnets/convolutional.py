@@ -93,9 +93,12 @@ class ConvolutionalNet(ConvolutionalFramework):
                 if not is_conv:
                     delta = convert_to_image(delta, lyr.get_output_shape())
                     is_conv = True
-            elif lt is "dense" or lt is "soft":
+            elif lt is "dense" or lt is "soft" or lt is "out":
                 fzs = flatten_image(fzs)
                 dzs = flatten_image(dzs)
+
+            print "this is func deriv"
+            print dzs
             dw, db, dlt = lyr.backprop(fzs, dzs, delta)
             delta_w.insert(0, dw)
             delta_b.insert(0, db)
@@ -158,4 +161,3 @@ class ConvolutionalNet(ConvolutionalFramework):
             # print self.layers[4].weights[0]
 
         self.reset_velocity()
-
