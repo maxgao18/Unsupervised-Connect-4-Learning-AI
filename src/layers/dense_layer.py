@@ -42,6 +42,8 @@ class DenseLayer(Layer):
         return weightDeltas, biasDeltas, prevDeltas
 
     def getdeltas(self, d_prev_z_activations, curr_deltas):
+        print curr_deltas
+        print "+THEFUCK"
         prevDeltas = np.dot(self.weights.transpose(), curr_deltas) * d_prev_z_activations
         return prevDeltas
 

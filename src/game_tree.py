@@ -111,7 +111,7 @@ cnn.addlayer("conv", None, (4,3,3))
 cnn.addlayer("dense", 20)
 cnn.addlayer("out")
 
-for hyperepoch in range(100000):
+for hyperepoch in range(100):
     print "Hyper Epoch: " + str(hyperepoch)
     cnn_new = copy.deepcopy(cnn)
     tree = SearchTree(0.5, cnn_new)
@@ -119,6 +119,7 @@ for hyperepoch in range(100000):
         print "Game: " + str(i)
         tree.self_play(30)
     training_set = tree.self_play(30)
+    print training_set
     print np.shape(training_set)
     print training_set[0][1]
 

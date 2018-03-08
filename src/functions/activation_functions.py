@@ -115,6 +115,8 @@ class CustomActivation:
 
     @staticmethod
     def func_deriv(z):
+        if z.dtype == np.int:
+            z = np.asfarray(z, dtype='float')
         z[:7] = Softmax.func_deriv(z[:7])
         z[7:] = Sigmoid.func_deriv(z[7:])
         return z
