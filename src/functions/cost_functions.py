@@ -30,6 +30,25 @@ class NegativeLogLikelihood:
         return network_output-expected_output
         #return -(expected_output/network_output)*z_activation_deriv
 
+class CrossEntropy:
+    @staticmethod
+    def cost(network_output, expected_output):
+        totalsum = 0.0
+        for no, eo in zip(network_output, expected_output):
+            if eo == 0:
+                totalsum -= np.log(1.0-no)
+            elif eo == 1:
+                totalsum -= np.log(no)
+            else:
+                totalsum -= eo*np.log(no/eo) + (1.0-eo)*np.log((1.0-no)/(1.0-eo))
+        return totalsum
+
+    @staticmethod
+    def delta(network_output, z_activation_deriv, expected_output):
+        if expected_output.dtype == np.int:
+            expected_output = np.asfarray(expected_output, dtype='float')
+        return network_output - expected_output
+
 class CustomCost:
     @staticmethod
     def cost (network_output, expected_output):
@@ -40,6 +59,6 @@ class CustomCost:
     def delta (network_output, z_activation_deriv, expected_output):
         deltas = np.zeros(8)
         deltas[:7] = NegativeLogLikelihood.delta(network_output[:7], z_activation_deriv[:7], expected_output[:7])
-        deltas[7:] = QuadraticCost.delta(network_output[7:], z_activation_deriv[7:], expected_output[7:])
+        deltas[7:] = CrossEntropy.delta(network_output[7:], z_activation_deriv[7:], expected_output[7:])
         return deltas
 

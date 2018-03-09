@@ -6,4 +6,5 @@ from activation_functions import CustomActivation
 
 from cost_functions import QuadraticCost
 from cost_functions import NegativeLogLikelihood
+from cost_functions import CrossEntropy
 from cost_functions import CustomCost
